@@ -6,26 +6,49 @@ public class GameManager : MonoBehaviour
 {
 
     public List<CarBehaviour> carPrefabs;
-    public PlayerBehaviour player;
+    public PlayerBehaviour playerPrefab;
     public float spawnTime;
 
+    [Header("UI")]
+    public GameOverPopup gameOverPopup;
+    public MenuScreen menuScren;
+
     private float timer;
+    private bool gameOn;
+    private PlayerBehaviour playerInstance;
 
     // Start is called before the first frame update
     void Start()
     {
+        ShowMenu();
+    }
+
+    public void ShowMenu()
+    {
+        menuScren.Show(this);
+    }
+
+    // TODO: setup the basic game loop
+    public void StartGame()
+    {
         timer = spawnTime;
+        playerInstance = Instantiate(playerPrefab);
+        playerInstance.gameManager = this;
+        gameOn = true;
     }
 
     // Update is called once per frame
     void Update()
     {
-        timer -= Time.deltaTime;
-
-        if(timer <= 0)
+        if(gameOn)
         {
-            timer = spawnTime;
-            SpawnCar();
+            timer -= Time.deltaTime;
+
+            if(timer <= 0)
+            {
+                timer = spawnTime;
+                SpawnCar();
+            }
         }
     }
 
@@ -37,6 +60,13 @@ public class GameManager : MonoBehaviour
                 carPrefabs[Random.Range(0, carPrefabs.Count)],
                 new Vector3(-1.5f + 1.5f * line, 0, 20),
                 Quaternion.identity);
-        car.Init(player, Random.Range(player.minSpeed * 0.7f, player.maxSpeed * 0.9f));
+        car.Init(playerInstance, Random.Range(playerInstance.minSpeed * 0.7f, playerInstance.maxSpeed * 0.9f));
+    }
+
+    public void GameOver()
+    {
+        gameOverPopup.Show(playerInstance.score, this);
+        gameOn = false;
+        Destroy(playerInstance.gameObject);
     }
 }
