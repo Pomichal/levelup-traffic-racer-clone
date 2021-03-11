@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     [Header("UI")]
     public GameOverPopup gameOverPopup;
     public MenuScreen menuScren;
+    public InGameScreen inGameScreen;
 
     private float timer;
     private bool gameOn;
@@ -20,11 +21,13 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Input.gyro.enabled = true;
         ShowMenu();
     }
 
     public void ShowMenu()
     {
+        inGameScreen.Hide();
         menuScren.Show(this);
     }
 
@@ -33,8 +36,9 @@ public class GameManager : MonoBehaviour
     {
         timer = spawnTime;
         playerInstance = Instantiate(playerPrefab);
-        playerInstance.gameManager = this;
+        playerInstance.Init(this, inGameScreen.speedUpButton, inGameScreen.slowDownButton);
         gameOn = true;
+        inGameScreen.Show();
     }
 
     // Update is called once per frame
@@ -66,6 +70,7 @@ public class GameManager : MonoBehaviour
     public void GameOver()
     {
         gameOverPopup.Show(playerInstance.score, this);
+        inGameScreen.Hide();
         gameOn = false;
         Destroy(playerInstance.gameObject);
     }

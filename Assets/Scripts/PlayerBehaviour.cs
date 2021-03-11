@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlayerBehaviour : MonoBehaviour
@@ -18,10 +19,20 @@ public class PlayerBehaviour : MonoBehaviour
     public float minSpeed;  // TODO: make it car-dependent
     public float maxSpeed;
 
+    public HoldButtonBehaviour speedUpButton;
+    public HoldButtonBehaviour slowDownButton;
+
     // Start is called before the first frame update
     void Start()
     {
         speed = minSpeed;
+    }
+
+    public void Init(GameManager manager, HoldButtonBehaviour speedUp, HoldButtonBehaviour slowDown)
+    {
+        gameManager = manager;
+        speedUpButton = speedUp;
+        slowDownButton = slowDown;
     }
 
     // Update is called once per frame
@@ -31,11 +42,24 @@ public class PlayerBehaviour : MonoBehaviour
 
         float hor = Input.GetAxis("Horizontal");
 
-        transform.position += Vector3.right * hor * sensibility * Time.deltaTime;  // right: 1,0,0
+        float gyroHor = Input.gyro.gravity.x;
+
+        Vector3 movement = Vector3.right * sensibility * Time.deltaTime;
+
+        // TODO: set bounds for movement
+
+        transform.position += movement * hor + movement * gyroHor * 10;  // right: 1,0,0
 
         float ver = Input.GetAxis("Vertical");
 
-        speed += ver * horsePower - drag;
+        float verButton = speedUpButton.isDown ? 1 : 0;
+
+        if(slowDownButton.isDown)
+        {
+            verButton = -1;
+        }
+
+        speed += ver * horsePower - drag + verButton * horsePower;
 
         if(speed < minSpeed)
         {
@@ -45,7 +69,9 @@ public class PlayerBehaviour : MonoBehaviour
         {
             speed = maxSpeed;
         }
+
     }
+
 
     void OnTriggerEnter(Collider other)
     {
